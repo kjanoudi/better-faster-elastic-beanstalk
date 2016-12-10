@@ -20,39 +20,7 @@ __NOTE__: this respo is way ahead of the StackOverflow thread, and heavily custo
 
 ## Usage
 
-Put `.ebextensions/example_env.config` into your project `.ebextensions` dir and read through the file to get a grasp of its mechanics.  
-example_env.config from this repo does following:
-- installs bunch of packages (such as ImageMagick, git, tmux, mosh etc.); 
-- fills option settings with default values (I strongly recommend NOT to put any passwords here, even in a private repo, and instead set them via instances profiles jsons, see docs here http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_nodejs.container.html);
-- fetches all *.sh hooks from this _public_ repo. You can (and should) replace them with your own hooks from your private repos of course;
-- sets up simple PhantomJS proxy via nginx config modification;
-- injects z.sh (for admin comfort);
-- sets up logging io.server...
-
-... and much much more. We used these hooks in our production and it worked bulletproof (unless github went down :). Chances are, you won't need 90% of functionality we developed, so please refer to the original SO thread for more ideas and less sophisticated config for generic use-cases:
-
-http://stackoverflow.com/questions/21200251/avoid-rebuilding-node-modules-in-elastic-beanstalk
-
-## Principle of action
-
-We use `.ebextensions/example_env.config` to replace default AWS deploy & config hooks with customized ones (all *.sh files, see detais below). Also, in a default EB container setup some env variables are missing (`$HOME` for example) and `node-gyp` sometimes fails during rebuild because of that (took me 2 hours of googling and reinstalling libxmljs to resolve it). 
-
-Below are the files to be included along with your build. You can inject them via env.config as inline code or via `source: URL` (as in `example_env.config` from this repo)
-
-**`env.vars`**: desired node version & arch are included here and in `env.config, see below;
-
-**`40install_node.sh`**: fetch and ungzip desired node.js version, make global symlinks, update global npm version, 
-
-**`50npm.sh`**: creates /var/node_modules, symlinks it to app dir and runs npm install. You can install any module globally from here, they will land in /root/.npm.
-
-*you can add more *.sh hooks for your needs*: see `55phantomjs_restart.sh` and `46update_geolitecity.sh` for examples.
-
-**`env.config`**: note node version here too, and to be safe, put desired node version in env config in your AWS console as well. I'm not 100% certain which of these settings will take precedence.
-
-There you have it: on t1.micro instance deployment now takes 20-30 secs instead of 10-15 minutes! If you deploy 10 times a day, this tweak will save you 3 (three) weeks in a year.
-Hope it helps and special thanks  to AWS EB staff for my lost weekend :)
+I have uploaded my own personal ebextensions folder for example use. I believe you can just copy and paste the entire folder, as I typically do
+on my new projects. There should be no, or very few, changes required. Node version is defined at the top of the `env.config` file.
 
 
-
-##todo
-- remove (rename) and rebuild node_modules in case NodeJS or npm version gets changed 
